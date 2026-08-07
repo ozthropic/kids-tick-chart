@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Icon generator — Kids Tick Chart</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 20px; }
+    canvas { border: 1px solid #ccc; margin: 6px; }
+  </style>
+</head>
+<body>
+  <h1>App icon generator</h1>
+  <p>Renders the app icon at 180 / 192 / 512 px. Data URLs are exposed on
+     <code>window.iconData</code>; buttons download the PNGs directly.</p>
+  <div id="out"></div>
+  <script>
+    // Smiling star on a sky-blue rounded square — same art style as the app.
+    function drawIcon(g, S) {
+      const u = S / 100; // work in 0..100 units
+      // background rounded square
+      const r = 22 * u;
+      g.beginPath();
+      g.moveTo(r, 0);
+      g.arcTo(S, 0, S, S, r);
+      g.arcTo(S, S, 0, S, r);
+      g.arcTo(0, S, 0, 0, r);
+      g.arcTo(0, 0, S, 0, r);
+      g.closePath();
+      const grad = g.createLinearGradient(0, 0, 0, S);
+      grad.addColorStop(0, '#8FB4E3');
+      grad.addColorStop(1, '#C3DAF2');
+      g.fillStyle = grad;
+      g.fill();
+      // tiny background stars
+      g.fillStyle = 'rgba(255,255,255,0.85)';
+      [[16, 16, 2.6], [84, 13, 2.2], [88, 78, 2.4], [12, 80, 2.0], [78, 40, 1.8]].forEach(([x, y, rr]) => {
+        g.beginPath();
+        g.arc(x * u, y * u, rr * u, 0, Math.PI * 2);
+        g.fill();
+      });
+      // big smiling star
+      const cx = 50 * u, cy = 52 * u, R = 34 * u, rIn = 15 * u;
+      g.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const ang = -Math.PI / 2 + (i * Math.PI) / 5;
+        const rad = i % 2 === 0 ? R : rIn;
+        const x = cx + Math.cos(ang) * rad;
+        const y = cy + Math.sin(ang) * rad;
+        i === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
+      }
+      g.closePath();
+      g.fillStyle = '#FFD166';
+      g.strokeStyle = '#3E3A5C';
+      g.lineWidth = 5 * u;
+      g.lineJoin = 'round';
+      g.fill();
+      g.stroke();
+      // face
+      g.fillStyle = '#3E3A5C';
+      g.beginPath(); g.arc(43 * u, 50 * u, 2.8 * u, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.arc(57 * u, 50 * u, 2.8 * u, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#3E3A5C';
+      g.lineWidth = 3.5 * u;
+      g.lineCap = 'round';
+      g.beginPath();
+      g.moveTo(44 * u, 57 * u);
+      g.quadraticCurveTo(50 * u, 63 * u, 56 * u, 57 * u);
+      g.stroke();
+      // cheeks
+      g.fillStyle = '#F7A8C4';
+      g.beginPath(); g.arc(38 * u, 56 * u, 3.2 * u, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.arc(62 * u, 56 * u, 3.2 * u, 0, Math.PI * 2); g.fill();
+    }
+
+    window.iconData = {};
+    const out = document.getElementById('out');
+    [180, 192, 512].forEach((S) => {
+      const c = document.createElement('canvas');
+      c.width = S;
+      c.height = S;
+      c.style.width = '120px';
+      c.style.height = '120px';
+      drawIcon(c.getContext('2d'), S);
+      window.iconData[S] = c.toDataURL('image/png');
+      const btn = document.createElement('button');
+      btn.textContent = 'Download icon-' + S + '.png';
+      btn.onclick = () => {
+        const a = document.createElement('a');
+        a.href = window.iconData[S];
+        a.download = 'icon-' + S + '.png';
+        a.click();
+      };
+      const wrap = document.createElement('div');
+      wrap.append(c, btn);
+      out.append(wrap);
+    });
+  </script>
+</body>
+</html>

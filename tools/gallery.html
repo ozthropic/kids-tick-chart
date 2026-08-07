@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Art gallery — QA page</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #C3DAF2; padding: 16px; }
+    h2 { margin: 18px 0 8px; color: #3E3A5C; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+    .cell { background: #FFF7E8; border-radius: 10px; padding: 6px; text-align: center; }
+    .cell svg { width: 100%; height: auto; display: block; }
+    .cell span { font-size: 10px; color: #3E3A5C; font-weight: 600; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h2>Icons</h2>
+  <div class="grid" id="icons"></div>
+  <h2>Stickers</h2>
+  <div class="grid" id="stickers"></div>
+  <script type="module">
+    import { ICONS } from '../js/icons.js';
+    import { STICKER_IDS, stickerSvg } from '../js/stickers.js';
+    document.getElementById('icons').innerHTML = Object.entries(ICONS)
+      .map(([id, svg]) => `<div class="cell">${svg}<span>${id}</span></div>`).join('');
+    document.getElementById('stickers').innerHTML = STICKER_IDS
+      .map((id) => `<div class="cell">${stickerSvg(id)}<span>${id}</span></div>`).join('');
+    document.title = 'gallery-ready';
+  </script>
+</body>
+</html>

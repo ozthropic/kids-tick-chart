@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>QA seeder</title></head>
+<body>
+<script>
+// QA seeder — sets up localStorage scenarios, then redirects into the app.
+// Usage: qa.html?seed=kid&go=%23parent   (go is a URL-encoded hash deep link)
+const params = new URLSearchParams(location.search);
+const d = new Date();
+const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const set = (k, v) => localStorage.setItem(k, JSON.stringify(Object.assign({ schema: 1 }, v)));
+
+const BEDTIME_ITEMS = [
+  { id: 'bath', label: 'Bath', icon: 'bath' },
+  { id: 'pyjamas', label: 'Pyjamas', icon: 'pyjamas' },
+  { id: 'brush-teeth', label: 'Floss & Brush Teeth', icon: 'brush-teeth' },
+  { id: 'potty', label: 'Potty', icon: 'potty' },
+  { id: 'book-song', label: 'Book & Song', icon: 'book-song' },
+  { id: 'sleep', label: 'Sleep', icon: 'sleep' }
+];
+const MORNING_ITEMS = [
+  { id: 'wake-up', label: 'Wake Up', icon: 'wake-up' },
+  { id: 'potty', label: 'Potty', icon: 'potty' },
+  { id: 'wash-face', label: 'Wash Face', icon: 'wash-face' },
+  { id: 'brush-teeth', label: 'Brush Teeth', icon: 'brush-teeth' },
+  { id: 'get-dressed', label: 'Get Dressed', icon: 'get-dressed' },
+  { id: 'brush-hair', label: 'Brush Hair', icon: 'hairbrush' },
+  { id: 'breakfast', label: 'Breakfast', icon: 'breakfast' }
+];
+
+const seeds = {
+  fresh() { localStorage.clear(); },
+  kid() {
+    localStorage.clear();
+    set('kta.settings', { childName: 'Nick', soundOn: true, onboarded: true });
+    set('kta.active', { routineId: 'bedtime', title: 'Bedtime', accent: 'night', publishedAt: Date.now(), items: BEDTIME_ITEMS });
+    set('kta.day', { date: today, checks: { bedtime: ['bath', 'pyjamas'] }, rewarded: [] });
+  },
+  morning() {
+    localStorage.clear();
+    set('kta.settings', { childName: 'Nick', soundOn: true, onboarded: true });
+    set('kta.active', { routineId: 'morning', title: 'Morning', accent: 'sun', publishedAt: Date.now(), items: MORNING_ITEMS });
+    set('kta.day', { date: today, checks: {}, rewarded: [] });
+  },
+  album() {
+    localStorage.clear();
+    set('kta.settings', { childName: 'Nick', soundOn: true, onboarded: true });
+    set('kta.active', { routineId: 'bedtime', title: 'Bedtime', accent: 'night', publishedAt: Date.now(), items: BEDTIME_ITEMS });
+    const ids = ['bear-star', 'bunny-heart', 'cat-moon', 'fox-star', 'frog-rainbow', 'owl-flower', 'penguin-star', 'dino-heart', 'fox-star'];
+    set('kta.stickers', { log: ids.map((id) => ({ id, ts: Date.now() })) });
+    const hist = {}; hist[today] = ['bedtime'];
+    set('kta.history', { days: hist });
+    set('kta.day', { date: today, checks: {}, rewarded: [] });
+  }
+};
+
+// Refuse to run without an explicit seed — this page wipes localStorage, and a
+// stray visit on the family iPad must never destroy a child's stickers.
+const seed = params.get('seed');
+if (!seeds[seed]) {
+  document.body.textContent =
+    'QA seeder. Add ?seed=kid | morning | album | fresh to run. Nothing was changed.';
+  throw new Error('no seed specified');
+}
+seeds[seed]();
+if (params.get('stay')) {
+  document.title = 'seeded';
+  document.body.textContent = 'seeded: ' + (params.get('seed') || 'kid');
+} else {
+  location.replace('../' + (params.get('go') || ''));
+}
+</script>
+</body>
+</html>
