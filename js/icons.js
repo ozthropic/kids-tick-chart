@@ -422,19 +422,25 @@ export const ICONS = {
     <path d="M84 16 q-5 -6 0 -10 q4 -3 5 1 q1 -4 5 -1 q4 4 -3 10 Z" fill="${C.coral}" ${st}/>
   `),
 
+  // Two cartoon puppies — an original drawing in this app's style, for the
+  // "pick up your toy dog" step. Blue pup in front, orange pup behind.
   teddy: svg(`
-    <circle cx="34" cy="20" r="8" fill="${C.wood}" ${s}/>
-    <circle cx="66" cy="20" r="8" fill="${C.wood}" ${s}/>
-    <circle cx="34" cy="20" r="3" fill="${C.rose}"/>
-    <circle cx="66" cy="20" r="3" fill="${C.rose}"/>
-    <circle cx="50" cy="34" r="20" fill="${C.wood}" ${s}/>
-    ${dot(43, 30)} ${dot(57, 30)}
-    <ellipse cx="50" cy="40" rx="8" ry="6" fill="${C.cream}" ${st}/>
-    <circle cx="50" cy="38" r="2.5" fill="${C.ink}"/>
-    <ellipse cx="50" cy="70" rx="19" ry="17" fill="${C.wood}" ${s}/>
-    <ellipse cx="50" cy="72" rx="10" ry="9" fill="${C.cream}" ${st}/>
-    <ellipse cx="27" cy="64" rx="7" ry="10" fill="${C.wood}" ${s} transform="rotate(24 27 64)"/>
-    <ellipse cx="73" cy="64" rx="7" ry="10" fill="${C.wood}" ${s} transform="rotate(-24 73 64)"/>
+    <path d="M63 40 L60 22 L74 31 Z" fill="${C.coral}" ${s}/>
+    <path d="M92 40 L95 22 L81 31 Z" fill="${C.coral}" ${s}/>
+    <circle cx="77" cy="53" r="20" fill="${C.coral}" ${s}/>
+    <ellipse cx="77" cy="60" rx="11" ry="8" fill="${C.white}" ${st}/>
+    ${dot(70, 48, 2.4)} ${dot(84, 48, 2.4)}
+    <ellipse cx="77" cy="56" rx="3.4" ry="2.6" fill="${C.ink}"/>
+    ${smile(77, 62, 8)}
+    <path d="M14 44 L11 20 L29 32 Z" fill="${C.sky}" ${s}/>
+    <path d="M52 44 L55 20 L37 32 Z" fill="${C.sky}" ${s}/>
+    <circle cx="33" cy="58" r="25" fill="${C.sky}" ${s}/>
+    <path d="M33 33 a25 25 0 0 0 -23 15 a25 25 0 0 0 8 25 Z" fill="${C.sky2}"/>
+    <circle cx="33" cy="58" r="25" fill="none" ${s}/>
+    <ellipse cx="33" cy="66" rx="13" ry="10" fill="${C.white}" ${st}/>
+    ${dot(25, 53, 3)} ${dot(42, 53, 3)}
+    <ellipse cx="33" cy="61" rx="4.2" ry="3.2" fill="${C.ink}"/>
+    ${smile(33, 68, 10)}
   `),
 
   star: svg(`
@@ -460,6 +466,8 @@ export const PRESET_ICON_IDS = [
 ];
 
 export const ALL_ICON_IDS = [...BONUS_ICON_IDS, ...PRESET_ICON_IDS];
+
+ICONS.puppies = ICONS.teddy;
 
 export function iconSvg(id) {
   return ICONS[id] || ICONS.star;

@@ -9,6 +9,7 @@ import {
 } from '../state.js';
 import { iconSvg, ALL_ICON_IDS } from '../icons.js';
 import { setMuted } from '../audio.js';
+import { checkForUpdate, getVersion } from '../update.js';
 import { app } from '../bus.js';
 import { esc } from '../util.js';
 
@@ -222,6 +223,14 @@ function renderSettings(body) {
         <p class="tab-hint" id="backup-note"></p>
       </div>
 
+      <div class="update-box">
+        <span class="field-label">App version</span>
+        <p class="tab-hint" id="version-line">Checking&hellip;</p>
+        <button class="big-btn" id="check-update">Check for Updates</button>
+        <p class="tab-hint" id="update-note">New versions install themselves automatically &mdash;
+        you should never need this button.</p>
+      </div>
+
       <p class="tab-hint install-tip">Tip: open this app in Safari and use <strong>Share &rarr; Add to Home Screen</strong>.
       It becomes a full-screen app, works offline, and stickers are saved for good.</p>
     </div>`;
@@ -246,6 +255,26 @@ function renderSettings(body) {
     box.value = exportData();
     box.select();
     body.querySelector('#backup-note').textContent = 'Code created — copy it somewhere safe.';
+  });
+
+  const versionLine = body.querySelector('#version-line');
+  getVersion().then((v) => {
+    if (versionLine.isConnected) versionLine.textContent = v ? 'Version ' + v : 'Version unavailable offline';
+  });
+
+  body.querySelector('#check-update').addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const note = body.querySelector('#update-note');
+    btn.disabled = true;
+    note.textContent = 'Checking\u2026';
+    const result = await checkForUpdate();
+    if (!note.isConnected) return;
+    note.textContent = result === 'updating'
+      ? 'New version found \u2014 installing, the app will reload in a moment.'
+      : result === 'current'
+        ? 'You already have the newest version.'
+        : 'Could not check right now \u2014 the app may be offline.';
+    btn.disabled = false;
   });
 
   body.querySelector('#backup-import').addEventListener('click', () => {

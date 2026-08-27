@@ -1,6 +1,8 @@
 // sw.js — cache-first offline layer. Bump VERSION on every deploy.
 
-const VERSION = 'kta-v1';
+// Bumped on every deploy. Installed devices pick the new version up on
+// their own (see js/update.js) — no need to reinstall the home-screen app.
+const VERSION = 'kta-v2';
 
 const ASSETS = [
   './',
@@ -17,6 +19,7 @@ const ASSETS = [
   './js/audio.js',
   './js/confetti.js',
   './js/gate.js',
+  './js/update.js',
   './js/views/onboarding.js',
   './js/views/kid.js',
   './js/views/celebration.js',
@@ -46,6 +49,11 @@ self.addEventListener('activate', (e) => {
 });
 
 const DEV = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
+
+// The page asks which version is actually running (shown in Parent Settings).
+self.addEventListener('message', (e) => {
+  if (e.data === 'VERSION' && e.ports && e.ports[0]) e.ports[0].postMessage(VERSION);
+});
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;

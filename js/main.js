@@ -3,6 +3,7 @@
 import { app } from './bus.js';
 import { ensureToday, getSettings } from './state.js';
 import { initAudioUnlock, setMuted } from './audio.js';
+import { initAutoUpdate } from './update.js';
 import * as onboarding from './views/onboarding.js';
 import * as kid from './views/kid.js';
 import * as album from './views/album.js';
@@ -58,9 +59,7 @@ function boot() {
   // Block pinch zoom in standalone Safari (gesturestart is iOS-specific).
   document.addEventListener('gesturestart', (e) => e.preventDefault());
 
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
+  initAutoUpdate();
 }
 
 boot();

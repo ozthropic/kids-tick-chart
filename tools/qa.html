@@ -46,7 +46,7 @@ const seeds = {
     localStorage.clear();
     set('kta.settings', { childName: 'Nick', soundOn: true, onboarded: true });
     set('kta.active', { routineId: 'bedtime', title: 'Bedtime', accent: 'night', publishedAt: Date.now(), items: BEDTIME_ITEMS });
-    const ids = ['bear-star', 'bunny-heart', 'cat-moon', 'fox-star', 'frog-rainbow', 'owl-flower', 'penguin-star', 'dino-heart', 'fox-star'];
+    const ids = ['blue-pup', 'pink-piggy', 'snow-bunny', 'ginger-cat', 'panda', 'lion', 'penguin', 'unicorn', 'blue-pup'];
     set('kta.stickers', { log: ids.map((id) => ({ id, ts: Date.now() })) });
     const hist = {}; hist[today] = ['bedtime'];
     set('kta.history', { days: hist });

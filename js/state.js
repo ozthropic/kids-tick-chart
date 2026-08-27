@@ -4,7 +4,7 @@
 // a 7pm bedtime in UTC+ timezones would land on tomorrow's date).
 
 import { ROUTINES } from './presets.js';
-import { STICKER_IDS } from './stickers.js';
+import { STICKER_IDS, isKnownSticker } from './stickers.js';
 
 const K = {
   settings: 'kta.settings',
@@ -244,10 +244,13 @@ export function getStickerLog() {
   return Array.isArray(s.log) ? s.log.filter(e => e && typeof e.id === 'string') : [];
 }
 
-// { stickerId: count } for owned stickers.
+// { stickerId: count } for owned stickers. Ids retired by an app update are
+// dropped so the album's "X of N" can never exceed the current cast.
 export function getOwnedStickers() {
   const counts = {};
-  for (const s of getStickerLog()) counts[s.id] = (counts[s.id] || 0) + 1;
+  for (const s of getStickerLog()) {
+    if (isKnownSticker(s.id)) counts[s.id] = (counts[s.id] || 0) + 1;
+  }
   return counts;
 }
 

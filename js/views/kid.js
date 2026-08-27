@@ -41,8 +41,9 @@ const LOCK_SVG = `<svg viewBox="0 0 24 24" class="gate-lock" aria-hidden="true">
 </svg>`;
 
 const GATE_RING = `<svg viewBox="0 0 48 48" class="gate-ring" aria-hidden="true">
-  <circle class="gate-ring-bg" cx="24" cy="24" r="20"/>
-  <circle class="gate-ring-fg" cx="24" cy="24" r="20" pathLength="100"/>
+  <circle class="gate-ring-bg" cx="24" cy="24" r="15"/>
+  <circle class="gate-ring-track" cx="24" cy="24" r="21"/>
+  <circle class="gate-ring-fg" cx="24" cy="24" r="21" pathLength="100"/>
 </svg>`;
 
 const ALBUM_ICON = `<svg viewBox="0 0 26 26" class="btn-icon" aria-hidden="true">
