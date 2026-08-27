@@ -16,7 +16,7 @@ works with no internet, and keeps stickers permanently.
 - **Parent Mode** — press and hold the small lock button in the corner for 3 seconds. Choose a
   routine (Morning / Mealtime / Tidy Up / Bedtime), switch individual steps on or off for today,
   reorder them, add custom steps with your own icon, then **Publish** to hand the iPad over.
-- **Rewards** — completing a routine awards one of 50 stickers, collected in a sticker album.
+- **Rewards** — completing a routine awards one of 55 stickers, collected in a sticker album.
 - **History** — a month calendar in Parent Mode stars every day at least one routine was finished.
 
 Settings, stickers, and history live only in the browser's localStorage on that device — nothing is

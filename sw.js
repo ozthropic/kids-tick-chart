@@ -2,7 +2,7 @@
 
 // Bumped on every deploy. Installed devices pick the new version up on
 // their own (see js/update.js) — no need to reinstall the home-screen app.
-const VERSION = 'kta-v2';
+const VERSION = 'kta-v3';
 
 const ASSETS = [
   './',

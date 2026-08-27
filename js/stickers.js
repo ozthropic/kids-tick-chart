@@ -1,4 +1,4 @@
-// stickers.js — 52 collectible sticker characters.
+// stickers.js — 55 collectible sticker characters.
 //
 // Every sticker is its own hand-drawn character: unique silhouette, colours and
 // props. (An earlier version composed 10 animals x 5 themes, which made every
@@ -68,7 +68,7 @@ const whiskers = () =>
 const spark = (x, y, r, fill = C.white) =>
   `<path d="M${x} ${y - r} L${x + r * 0.34} ${y - r * 0.34} L${x + r} ${y} L${x + r * 0.34} ${y + r * 0.34} L${x} ${y + r} L${x - r * 0.34} ${y + r * 0.34} L${x - r} ${y} L${x - r * 0.34} ${y - r * 0.34} Z" fill="${fill}" ${st}/>`;
 
-/* ── the cast: 52 distinct characters ─────────────────────────────────── */
+/* ── the cast: 55 distinct characters ─────────────────────────────────── */
 
 const CHARACTERS = [
   /* dogs */
@@ -495,6 +495,48 @@ const CHARACTERS = [
       `<ellipse cx="60" cy="78" rx="18" ry="12" fill="${C.lime}"/>` +
       `<path d="M42 70 q18 14 36 0" fill="none" ${st}/>` +
       dot(52, 62, 2.4) + dot(68, 62, 2.4) + blush(34, 74, C.coral) + blush(86, 74, C.coral)
+  },
+
+  /* garden & pond */
+  {
+    id: 'butterfly', name: 'Butterfly', bg: C.mint,
+    art: `<path d="M57 62 q-25 -33 -37 -17 q-10 14 8 25 q14 9 29 -8 Z" fill="${C.berry}" ${s}/>` +
+      `<path d="M63 62 q25 -33 37 -17 q10 14 -8 25 q-14 9 -29 -8 Z" fill="${C.berry}" ${s}/>` +
+      `<path d="M56 68 q-27 15 -21 33 q16 11 25 -15 Z" fill="${C.rose}" ${s}/>` +
+      `<path d="M64 68 q27 15 21 33 q-16 11 -25 -15 Z" fill="${C.rose}" ${s}/>` +
+      `<circle cx="35" cy="52" r="6" fill="${C.sun}"/><circle cx="85" cy="52" r="6" fill="${C.sun}"/>` +
+      `<circle cx="45" cy="88" r="4.5" fill="${C.sun}"/><circle cx="75" cy="88" r="4.5" fill="${C.sun}"/>` +
+      `<path d="M54 40 q-6 -12 -13 -16 M66 40 q6 -12 13 -16" fill="none" stroke="${C.ink}" stroke-width="4" stroke-linecap="round"/>` +
+      `<circle cx="40" cy="22" r="4.5" fill="${C.sun}" ${st}/><circle cx="80" cy="22" r="4.5" fill="${C.sun}" ${st}/>` +
+      `<ellipse cx="60" cy="76" rx="9" ry="17" fill="${C.sun}" ${s}/>` +
+      `<circle cx="60" cy="52" r="13" fill="${C.sun}" ${s}/>` +
+      eyes(56, 64, 50, 2.8) + smile(60, 56, 8)
+  },
+  {
+    id: 'ladybug', name: 'Ladybug', bg: C.sky2,
+    art: `<path d="M30 78 l-12 7 M30 64 l-13 -1 M90 78 l12 7 M90 64 l13 -1" fill="none" stroke="${C.ink}" stroke-width="5" stroke-linecap="round"/>` +
+      `<path d="M52 28 q-5 -11 -12 -13 M68 28 q5 -11 12 -13" fill="none" stroke="${C.ink}" stroke-width="4" stroke-linecap="round"/>` +
+      `<circle cx="38" cy="16" r="4.5" fill="${C.sun}" ${st}/><circle cx="82" cy="16" r="4.5" fill="${C.sun}" ${st}/>` +
+      `<circle cx="60" cy="40" r="16" fill="${C.charcoal}" ${s}/>` +
+      `<circle cx="53" cy="38" r="5" fill="${C.white}"/><circle cx="67" cy="38" r="5" fill="${C.white}"/>` +
+      dot(53, 38, 2.6) + dot(67, 38, 2.6) +
+      `<path d="M55 47 q5 4 10 0" fill="none" stroke="${C.white}" stroke-width="3" stroke-linecap="round"/>` +
+      `<ellipse cx="60" cy="76" rx="34" ry="30" fill="${C.coral}" ${s}/>` +
+      `<path d="M60 46 v60" stroke="${C.ink}" stroke-width="5" stroke-linecap="round"/>` +
+      `<circle cx="42" cy="66" r="7" fill="${C.charcoal}"/><circle cx="78" cy="66" r="7" fill="${C.charcoal}"/>` +
+      `<circle cx="48" cy="90" r="5.5" fill="${C.charcoal}"/><circle cx="72" cy="90" r="5.5" fill="${C.charcoal}"/>`
+  },
+  {
+    id: 'flamingo', name: 'Flamingo', bg: C.teal,
+    art: `<path d="M44 100 v12 M58 100 v12" fill="none" stroke="${C.ink}" stroke-width="5" stroke-linecap="round"/>` +
+      `<ellipse cx="50" cy="82" rx="29" ry="23" fill="${C.rose}" ${s}/>` +
+      `<path d="M62 76 q15 -17 5 -29 q-11 -13 7 -19" fill="none" stroke="${C.ink}" stroke-width="17" stroke-linecap="round"/>` +
+      `<path d="M62 76 q15 -17 5 -29 q-11 -13 7 -19" fill="none" stroke="${C.rose}" stroke-width="10" stroke-linecap="round"/>` +
+      `<path d="M34 82 q16 -11 31 2 q-15 11 -31 -2 Z" fill="${C.pinkDeep}" ${st}/>` +
+      `<circle cx="78" cy="27" r="13" fill="${C.rose}" ${s}/>` +
+      `<path d="M89 26 l15 7 -15 8 Z" fill="${C.sun}" ${s}/>` +
+      `<path d="M97 30 l7 3 -7 4 Z" fill="${C.ink}"/>` +
+      dot(78, 23, 3) + blush(70, 32)
   },
 
   /* fantasy */
