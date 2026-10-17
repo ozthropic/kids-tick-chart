@@ -586,6 +586,7 @@ button {
   background: #fff;
   border: 3px solid var(--ink);
   padding: 4px;
+  overflow: hidden;
 }
 .sticker-img img {
   display: block;
@@ -596,7 +597,12 @@ button {
 }
 .album-slot .sticker-img { max-width: 116px; }
 .album-slot.locked .sticker-img { border-color: transparent; background: transparent; }
-.album-slot.locked .sticker-img img { filter: grayscale(1) brightness(0.22); opacity: 0.85; }
+/* Unearned picture: a soft neutral-grey halo — you can sense a shape but not
+   make it out — matching the grey silhouettes of the drawn series. */
+.album-slot.locked .sticker-img img {
+  filter: grayscale(1) contrast(0.6) brightness(0.85) blur(4px);
+  opacity: 0.35;
+}
 .done-sticker .sticker-img { padding: 2px; border-width: 2px; }
 
 .series-tabs {
@@ -623,7 +629,17 @@ button {
 .series-tab-count { font-size: 14px; font-weight: 800; }
 .series-tab.complete .series-tab-name::after { content: ' \2605'; color: var(--sun); }
 
-.slot-name { font-size: 15px; font-weight: 800; color: var(--ink-soft); text-align: center; }
+.slot-name {
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .slot-count {
   position: absolute;
   top: 8px;

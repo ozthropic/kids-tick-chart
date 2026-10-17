@@ -1,5 +1,5 @@
 // stickers.js — the sticker collection: 55 drawn characters (series 1)
-// and 100 picture stickers (series 2).
+// and 112 picture stickers (series 2).
 //
 // Every sticker is its own hand-drawn character: unique silhouette, colours and
 // props. (An earlier version composed 10 animals x 5 themes, which made every
@@ -589,18 +589,135 @@ const CHARACTERS = [
 ];
 
 /* ── series 2: picture stickers ──────────────────────────────────────── */
-// 100 round picture stickers, supplied as square PNG files stickers/s2/001.png
-// … 100.png (round artwork on a transparent background, ~512 px). Their album
-// order is shuffled once with a fixed seed so the page looks mixed yet never
-// rearranges itself between visits.
+// 112 round picture stickers, stored as 512 px JPEGs stickers/s2/001.jpg … 112.jpg,
+// each cropped to its coloured disc (the app clips to a circle and draws the
+// same rim as the drawn badges). Their album order is shuffled once with a
+// fixed seed so the page looks mixed yet never rearranges itself between visits.
+// Names come from the original artwork file names.
 
-const SERIES2_COUNT = 100;
+const SERIES2_NAMES = [
+  "Bandit and Bingo Wash a Toy Car",
+  "Bingo and Lila’s Daisy Chain",
+  "Bingo Enjoys Iranian Celery Stew",
+  "Bingo enjoys Iranian chelo kebab",
+  "Bingo Hugs Her Floppy Bunny",
+  "Blue owl reading beside a bookshelf",
+  "Bluey and Bandit Kick a Football",
+  "Bluey and Bingo’s cardboard spaceship",
+  "Bluey and Bingo’s Granny Dance",
+  "Bluey and Chilli Play Field Hockey",
+  "Bluey and Chloe Build a Rainbow Tower",
+  "Bluey and Indy’s Apple Stand",
+  "Bluey and Mackenzie’s Woodland Leap",
+  "Bluey enjoys fesenjan and rice",
+  "Bluey enjoys ghormeh sabzi",
+  "Bluey Family Moonlit Camping Sticker",
+  "Bluey family puzzle time",
+  "Bluey waving under yellow stars",
+  "Bluey’s Sunny Park Piggyback",
+  "Boris and Miffy’s Red Wagon Ride",
+  "Chilli and Bingo’s Cozy Storytime",
+  "Daddy Pig Flies a Colorful Kite",
+  "Daddy Pig Helps George Build a Robot",
+  "Daniel Tiger and Baby Margaret sticker",
+  "Daniel Tiger and Dad Rowing Together",
+  "Daniel Tiger and Dad’s Toy Glider",
+  "Daniel Tiger and Dad's Red Glider",
+  "Daniel Tiger and Katerina Build a Snowman",
+  "Daniel Tiger and Katerina Share Golden Tahdig",
+  "Daniel Tiger and Katerina's Airplane Adventure",
+  "Daniel Tiger and Miss Elaina’s Rocket Collage",
+  "Daniel Tiger and Mom Roll Dough",
+  "Daniel Tiger and O Play Xylophone",
+  "Daniel Tiger and O Share Aloo Esfenaj",
+  "Daniel Tiger and Prince Wednesday’s Sandcastle",
+  "Daniel Tiger Builds a Birdhouse with Dad",
+  "Daniel Tiger Enjoys Chelo Kabab",
+  "Daniel Tiger kicks a soccer ball",
+  "Daniel Tiger on the Neighborhood Trolley",
+  "Daniel Tiger’s Butterfly Garden Discovery",
+  "Daniel Tiger’s Park Soccer Kick",
+  "Daniel Tiger’s Rainbow Rainy Day",
+  "Daniel Tiger’s Sunny Bicycle Ride",
+  "Daniel Tiger’s Toothbrushing Time",
+  "Daniel Tiger's Toy Racecar Adventure",
+  "Danny Dog’s Friendly Pirate Ship",
+  "Danny Dog's Toy Fire Engine",
+  "George and Richard’s Beach Dig",
+  "George Pig enjoying Iranian eggplant stew",
+  "George Pig enjoys adas polo",
+  "George Pig’s Dinosaur Volcano Adventure",
+  "Gerald Giraffe’s Red Balance Bike Ride",
+  "Grandpa Pig and George’s Garden Train",
+  "Katerina Kittycat’s Blue Ribbon Dance",
+  "Miffy and Boris Build a Bridge",
+  "Miffy and Boris Make Music",
+  "Miffy and Boris Share Loobia Polo",
+  "Miffy and Melanie on the Seesaw",
+  "Miffy and Snuffy’s Woodland Walk",
+  "Miffy astronaut on the moon",
+  "Miffy Enjoying a Picnic Burger",
+  "Miffy enjoys saffron rice and stew",
+  "Miffy Painting a Red Sailboat",
+  "Miffy riding a yellow scooter",
+  "Miffy Sails a Red Paper Boat",
+  "Miffy Spots a Ladybug",
+  "Miffy watches ducks by the pond",
+  "Miffy’s Green Kite Adventure",
+  "Miffy’s Moonlit Bedtime Cuddle",
+  "Mom Tiger and Margaret Stacking Rings",
+  "Ms Rachel and Herbie storytime sticker",
+  "Ms Rachel blowing bubbles",
+  "Ms Rachel Nurtures a Tiny Sprout",
+  "Ms Rachel’s Colorful Shape Sorter(1)",
+  "Ms Rachel’s colorful shape sorter",
+  "Ms Rachel’s toy telephone sticker",
+  "Ms. Rachel and Herbie Drum Together",
+  "Ms. Rachel and the Duck Puppet",
+  "Ms. Rachel and the Toy School Bus",
+  "Ms. Rachel birdwatching with a yellow bird",
+  "Ms. Rachel enjoys a veggie pizza",
+  "Ms. Rachel Enjoys Iranian Kotlet",
+  "Ms. Rachel Enjoys Zereshk Polo",
+  "Ms. Rachel Singing with Blue Tambourine",
+  "Ms. Rachel Waving Among Stars",
+  "Ms. Rachel with toy farm animals",
+  "Ms. Rachel’s Colorful Cup Tower",
+  "Ms. Rachel’s Colorful Sock Lesson",
+  "Ms. Rachel’s Moonlit Teddy Cuddle",
+  "Muffin Digs Sand with a Toy Excavator",
+  "Muffin’s minty tricycle ride",
+  "Pedro Pony and the Crescent Moon",
+  "Pedro Pony stargazing with a telescope",
+  "Peppa and Emily’s Beach Ball Fun",
+  "Peppa and George’s Cozy Music Class",
+  "Peppa and George’s Puddle Jump",
+  "Peppa and George’s Sunny Slide",
+  "Peppa and Granny’s Apple Harvest",
+  "Peppa and Mummy Pig Paint a Sun",
+  "Peppa and Suzy’s Dollhouse Playtime",
+  "Peppa Pig Enjoys Gheimeh and Saffron Rice",
+  "Peppa Pig family countryside outing",
+  "Peppa Pig’s cheerful starry wave",
+  "Rabbit peeking from a yellow submarine",
+  "Rebecca Rabbit’s Carrot Garden Hop",
+  "Rusty and Jack’s Forest Map Adventure",
+  "Rusty with Bat and Wicket",
+  "Socks’ Soapy Bubble Fun",
+  "Suzy Sheep’s Teddy Bear Checkup",
+  "Tiger Mom Helps Baby Stack Rings",
+  "Waving Daniel Tiger sticker",
+  "Zoe Zebra Waters a Sunflower"
+];
+
+const SERIES2_COUNT = 112;
 const pad3 = (n) => String(n).padStart(3, '0');
 
 const PICTURES = Array.from({ length: SERIES2_COUNT }, (_, i) => ({
   id: `s2-${pad3(i + 1)}`,
-  name: `Sticker ${i + 1}`,
-  src: `./stickers/s2/${pad3(i + 1)}.png`
+  name: SERIES2_NAMES[i] || `Sticker ${i + 1}`,
+  // resolved against this module, so the path is right from any page (e.g. tools/)
+  src: new URL(`../stickers/s2/${pad3(i + 1)}.jpg`, import.meta.url).href
 }));
 
 function mulberry32(seed) {

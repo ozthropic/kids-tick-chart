@@ -18,8 +18,8 @@ works with no internet, and keeps stickers permanently.
   routine (Morning / Mealtime / Tidy Up / Bedtime), switch individual steps on or off for today,
   reorder them, add custom steps with your own icon, then **Publish** to hand the iPad over.
 - **Rewards** — completing a routine awards a sticker, collected in an album with one page per
-  series: 55 drawn characters (Series 1) and 100 picture stickers (Series 2, `stickers/s2/001.png`
-  … `100.png`, square PNGs with round artwork, ~512 px).
+  series: 55 drawn characters (Series 1) and 112 picture stickers (Series 2, `stickers/s2/001.jpg`
+  … `112.jpg`, 512 px JPEGs cropped to the round artwork).
 - **History** — a month calendar in Parent Mode stars every day at least one routine was finished.
 
 Settings, stickers, and history live only in the browser's localStorage on that device — nothing is

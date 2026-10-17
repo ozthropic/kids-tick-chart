@@ -34,8 +34,8 @@ const ASSETS = [
 // Series-2 picture stickers. Cached on a best-effort basis: one missing file
 // must never stop the whole update from installing.
 const STICKER_PICTURES = Array.from(
-  { length: 100 },
-  (_, i) => `./stickers/s2/${String(i + 1).padStart(3, '0')}.png`
+  { length: 112 },
+  (_, i) => `./stickers/s2/${String(i + 1).padStart(3, '0')}.jpg`
 );
 
 const fresh = (u) => new Request(u, { cache: 'reload' });
