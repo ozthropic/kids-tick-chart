@@ -2,7 +2,8 @@
 <html lang="en">
 <head><meta charset="UTF-8"><title>QA seeder</title></head>
 <body>
-<script>
+<script type="module">
+import { SERIES } from '../js/stickers.js';
 // QA seeder — sets up localStorage scenarios, then redirects into the app.
 // Usage: qa.html?seed=kid&go=%23parent   (go is a URL-encoded hash deep link)
 const params = new URLSearchParams(location.search);
@@ -42,6 +43,15 @@ const seeds = {
     set('kta.active', { routineId: 'morning', title: 'Morning', accent: 'sun', publishedAt: Date.now(), items: MORNING_ITEMS });
     set('kta.day', { date: today, checks: {}, rewarded: [] });
   },
+  // every series-1 sticker owned, so the next award must come from series 2
+  'album-full'() {
+    localStorage.clear();
+    set('kta.settings', { childName: 'Nick', soundOn: true, onboarded: true });
+    set('kta.active', { routineId: 'bedtime', title: 'Bedtime', accent: 'night', publishedAt: Date.now(), items: BEDTIME_ITEMS });
+    const ids = SERIES[0].ids.concat(SERIES[1].ids.slice(0, 3));
+    set('kta.stickers', { log: ids.map((id) => ({ id, ts: Date.now() - 86400000 })) });
+    set('kta.day', { date: today, checks: { bedtime: ['bath', 'pyjamas', 'brush-teeth', 'potty', 'book-song'] }, rewarded: [] });
+  },
   album() {
     localStorage.clear();
     set('kta.settings', { childName: 'Nick', soundOn: true, onboarded: true });
@@ -59,7 +69,7 @@ const seeds = {
 const seed = params.get('seed');
 if (!seeds[seed]) {
   document.body.textContent =
-    'QA seeder. Add ?seed=kid | morning | album | fresh to run. Nothing was changed.';
+    'QA seeder. Add ?seed=kid | morning | album | album-full | fresh to run. Nothing was changed.';
   throw new Error('no seed specified');
 }
 seeds[seed]();

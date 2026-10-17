@@ -11,12 +11,15 @@ works with no internet, and keeps stickers permanently.
 
 ## How it works
 
-- **Kid screen** — giant tappable cards with hand-drawn SVG art. Tapping a finished card just
-  replays the happy animation; undoing a step needs a deliberate press-and-hold.
-- **Parent Mode** — press and hold the small lock button in the corner for 3 seconds. Choose a
+- **Kid screen** — giant tappable cards with hand-drawn SVG art. Tap a step to tick it, tap it
+  again to undo a mistake.
+- **Parent Mode** — press and hold the lock button in the corner for 3 seconds, then
+  answer a quick sum (a grown-up check the child cannot pass). Choose a
   routine (Morning / Mealtime / Tidy Up / Bedtime), switch individual steps on or off for today,
   reorder them, add custom steps with your own icon, then **Publish** to hand the iPad over.
-- **Rewards** — completing a routine awards one of 55 stickers, collected in a sticker album.
+- **Rewards** — completing a routine awards a sticker, collected in an album with one page per
+  series: 55 drawn characters (Series 1) and 112 picture stickers (Series 2, `stickers/s2/001.jpg`
+  … `112.jpg`, 512 px JPEGs cropped to the round artwork).
 - **History** — a month calendar in Parent Mode stars every day at least one routine was finished.
 
 Settings, stickers, and history live only in the browser's localStorage on that device — nothing is
