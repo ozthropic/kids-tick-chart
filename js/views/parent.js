@@ -212,6 +212,14 @@ function renderSettings(body) {
         <button class="switch ${s.soundOn ? 'on' : ''}" id="sound-switch" role="switch" aria-checked="${s.soundOn}"><span class="knob"></span></button>
       </div>
 
+      <div class="update-box">
+        <span class="field-label">Updates</span>
+        <p class="tab-hint" id="version-line">Checking&hellip;</p>
+        <button class="big-btn primary" id="check-update">Update App Now</button>
+        <p class="tab-hint" id="update-note">The app also updates itself the next time it opens.
+        Tap the button to check and install right away.</p>
+      </div>
+
       <div class="backup">
         <span class="field-label">Backup &amp; restore</span>
         <p class="tab-hint">Copy this code somewhere safe, or paste a code to restore stickers and settings.</p>
@@ -221,14 +229,6 @@ function renderSettings(body) {
           <button class="big-btn" id="backup-import">Restore</button>
         </div>
         <p class="tab-hint" id="backup-note"></p>
-      </div>
-
-      <div class="update-box">
-        <span class="field-label">App version</span>
-        <p class="tab-hint" id="version-line">Checking&hellip;</p>
-        <button class="big-btn" id="check-update">Check for Updates</button>
-        <p class="tab-hint" id="update-note">New versions install themselves automatically &mdash;
-        you should never need this button.</p>
       </div>
 
       <p class="tab-hint install-tip">Tip: open this app in Safari and use <strong>Share &rarr; Add to Home Screen</strong>.

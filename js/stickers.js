@@ -1,4 +1,5 @@
-// stickers.js — 55 collectible sticker characters.
+// stickers.js — the sticker collection: 55 drawn characters (series 1)
+// and 100 picture stickers (series 2).
 //
 // Every sticker is its own hand-drawn character: unique silhouette, colours and
 // props. (An earlier version composed 10 animals x 5 themes, which made every
@@ -587,23 +588,70 @@ const CHARACTERS = [
   }
 ];
 
-/* ── public API ───────────────────────────────────────────────────────── */
+/* ── series 2: picture stickers ──────────────────────────────────────── */
+// 100 round picture stickers, supplied as square PNG files stickers/s2/001.png
+// … 100.png (round artwork on a transparent background, ~512 px). Their album
+// order is shuffled once with a fixed seed so the page looks mixed yet never
+// rearranges itself between visits.
 
-const BY_ID = new Map(CHARACTERS.map((c) => [c.id, c]));
+const SERIES2_COUNT = 100;
+const pad3 = (n) => String(n).padStart(3, '0');
 
-export const STICKER_IDS = CHARACTERS.map((c) => c.id);
+const PICTURES = Array.from({ length: SERIES2_COUNT }, (_, i) => ({
+  id: `s2-${pad3(i + 1)}`,
+  name: `Sticker ${i + 1}`,
+  src: `./stickers/s2/${pad3(i + 1)}.png`
+}));
 
+function mulberry32(seed) {
+  return function () {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffled(list, seed) {
+  const a = list.slice();
+  const rnd = mulberry32(seed);
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ── public API ───────────────────────────────────────────────────────────────────── */
+
+const BY_ID = new Map([
+  ...CHARACTERS.map((c) => [c.id, c]),
+  ...PICTURES.map((p) => [p.id, p])
+]);
+
+// The album shows one page per series. Series 1 is kept forever even once
+// complete; new awards naturally come from whatever is still unowned.
+export const SERIES = [
+  { id: 's1', name: 'Series 1', ids: CHARACTERS.map((c) => c.id) },
+  { id: 's2', name: 'Series 2', ids: shuffled(PICTURES.map((p) => p.id), 20261018) }
+];
+
+export const STICKER_IDS = SERIES.flatMap((s) => s.ids);
+
+const MYSTERY = `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <circle cx="60" cy="60" r="58" fill="${C.white}"/>
+  <circle cx="60" cy="60" r="58" fill="none" stroke="${C.ink}" stroke-width="3"/>
+  <circle cx="60" cy="60" r="52" fill="${C.greyLt}"/>
+  ${spark(60, 60, 26, C.sun)}
+</svg>`;
+
+// Returns the sticker's markup: inline SVG for drawn characters, a framed
+// <img> for picture stickers. (Named for its origin; callers treat it as HTML.)
 export function stickerSvg(id) {
   const c = BY_ID.get(id);
-  if (!c) {
-    // A sticker earned on an older version — show a friendly mystery badge
-    // rather than a blank square.
-    return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <circle cx="60" cy="60" r="58" fill="${C.white}"/>
-      <circle cx="60" cy="60" r="58" fill="none" stroke="${C.ink}" stroke-width="3"/>
-      <circle cx="60" cy="60" r="52" fill="${C.greyLt}"/>
-      ${spark(60, 60, 26, C.sun)}
-    </svg>`;
+  if (!c) return MYSTERY; // earned on an older version — never a blank square
+  if (c.src) {
+    return `<span class="sticker-img"><img src="${c.src}" alt="" loading="lazy" decoding="async" draggable="false" onerror="this.style.visibility='hidden'"></span>`;
   }
   // The badge parts carry a class so the album can strip them for unearned
   // stickers, leaving the character's silhouette as a tease.

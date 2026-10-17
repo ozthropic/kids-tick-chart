@@ -9,6 +9,7 @@ import { stickerSvg } from '../stickers.js';
 import { sfx } from '../audio.js';
 import { burstAt } from '../confetti.js';
 import { attachHoldGate } from '../gate.js';
+import { askGrownUp } from '../quiz.js';
 import { app } from '../bus.js';
 import { esc, possessive } from '../util.js';
 
@@ -84,7 +85,7 @@ export function render() {
         </div>
         <button class="gate-btn" id="gate-btn" aria-label="Parents: press and hold">${GATE_RING}${LOCK_SVG}</button>
       </div>`;
-    attachHoldGate(root.querySelector('#gate-btn'), { ms: 3000, onComplete: () => app.show('parent') });
+    attachHoldGate(root.querySelector('#gate-btn'), { ms: 3000, onComplete: openParentGate });
     return;
   }
 
@@ -116,25 +117,20 @@ export function render() {
       <button class="gate-btn" id="gate-btn" aria-label="Parents: press and hold">${GATE_RING}${LOCK_SVG}</button>
     </div>`;
 
-  const cards = root.querySelector('#cards');
-  cards.addEventListener('click', onCardTap);
-  cards.addEventListener('pointerdown', onCardPointerDown);
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) =>
-    cards.addEventListener(ev, cancelHold)
-  );
+  root.querySelector('#cards').addEventListener('click', onCardTap);
   root.querySelector('#album-btn').addEventListener('click', () => app.show('album'));
-  attachHoldGate(root.querySelector('#gate-btn'), { ms: 3000, onComplete: () => app.show('parent') });
+  attachHoldGate(root.querySelector('#gate-btn'), { ms: 3000, onComplete: openParentGate });
+}
+
+// Hold 3 s, then prove you are a grown-up — the hold alone stopped working
+// once the child learned it.
+function openParentGate() {
+  askGrownUp(() => app.show('parent'));
 }
 
 // --- card interaction ---
-// Tap checks a step. A tap on an already-checked card is a rewarding no-op
-// (toddlers repeat-tap their favorites); un-checking requires an 800ms
-// press-and-hold so a kid can't accidentally undo their own progress.
-
-const UNCHECK_HOLD_MS = 800;
-let holdTimer = null;
-let holdCard = null;
-let swallowNextTap = false;
+// A tap toggles a step: tap to tick, tap again to undo a mistake. (A
+// press-and-hold undo was tried first; parents never discovered it.)
 
 function bounceCard(btn) {
   btn.classList.remove('bounce');
@@ -153,50 +149,9 @@ function syncProgress(popIndex = -1) {
   if (banner) banner.classList.toggle('show', isRoutineComplete() && isRewarded());
 }
 
-function cancelHold() {
-  if (holdTimer) {
-    clearTimeout(holdTimer);
-    holdTimer = null;
-  }
-  if (holdCard) {
-    holdCard.classList.remove('unchecking');
-    holdCard = null;
-  }
-}
-
-function onCardPointerDown(e) {
-  const btn = e.target.closest('.card');
-  if (!btn || !btn.classList.contains('is-checked')) return;
-  cancelHold();
-  holdCard = btn;
-  btn.classList.add('unchecking');
-  holdTimer = setTimeout(() => {
-    holdTimer = null;
-    const card = holdCard;
-    cancelHold();
-    // the click that follows pointerup must not re-check the card
-    swallowNextTap = true;
-    setTimeout(() => { swallowNextTap = false; }, 400);
-    if (ensureToday()) {
-      render();
-      return;
-    }
-    if (card.classList.contains('is-checked')) {
-      toggleCheck(card.dataset.id);
-      card.classList.remove('is-checked');
-      sfx.uncheck();
-      syncProgress();
-    }
-  }, UNCHECK_HOLD_MS);
-}
-
 function onCardTap(e) {
   const btn = e.target.closest('.card');
   if (!btn) return;
-  if (swallowNextTap) {
-    swallowNextTap = false;
-    return;
-  }
   // date flipped since last render (tap landed inside the rollover window):
   // reset the screen instead of writing a check into the stale-looking day
   if (ensureToday()) {
@@ -205,20 +160,20 @@ function onCardTap(e) {
   }
   if (!getActive()) return;
 
-  if (btn.classList.contains('is-checked')) {
+  const nowChecked = toggleCheck(btn.dataset.id);
+  btn.classList.toggle('is-checked', nowChecked);
+
+  if (nowChecked) {
     bounceCard(btn);
     sfx.pop();
-    return;
-  }
-
-  toggleCheck(btn.dataset.id);
-  btn.classList.add('is-checked');
-  bounceCard(btn);
-  sfx.pop();
-  burstAt(btn.querySelector('.check'));
-  syncProgress(checkedCount() - 1);
-  if (isRoutineComplete() && !isRewarded()) {
-    const sticker = recordCompletion();
-    if (sticker) setTimeout(() => app.celebrate(sticker), 750);
+    burstAt(btn.querySelector('.check'));
+    syncProgress(checkedCount() - 1);
+    if (isRoutineComplete() && !isRewarded()) {
+      const sticker = recordCompletion();
+      if (sticker) setTimeout(() => app.celebrate(sticker), 750);
+    }
+  } else {
+    sfx.uncheck();
+    syncProgress();
   }
 }
