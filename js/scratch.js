@@ -87,7 +87,9 @@ function drawCoat(canvas) {
 // (the whole card) so a stroke that starts a little outside still counts.
 export function attachScratch(canvas, surface, { threshold = 0.7, onStroke, onComplete } = {}) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const cssSize = canvas.getBoundingClientRect().width || 300;
+  // layout width: unlike getBoundingClientRect it ignores the card's drop-in
+  // transform (scaled to 0.5 while it is still off screen)
+  const cssSize = canvas.offsetWidth || canvas.getBoundingClientRect().width || 300;
   const size = Math.round(cssSize * dpr);
   canvas.width = size;
   canvas.height = size;

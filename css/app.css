@@ -470,7 +470,12 @@ button {
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
+  pointer-events: none; /* no scratching until it has landed (.ready) */
 }
+.scratch-card.ready { pointer-events: auto; }
+/* belt and braces: the sticker is never drawn without the coat over it */
+.scratch-card:not(.coated) .scratch-sticker { visibility: hidden; }
+.stage-reveal .scratch-card .scratch-sticker { visibility: visible; }
 .stage-card .scratch-card {
   opacity: 1;
   transform: none;
@@ -673,6 +678,62 @@ button {
   opacity: 0.35;
 }
 .done-sticker .sticker-img { padding: 2px; border-width: 2px; }
+
+/* collected stickers can be tapped to see them big */
+.album-slot.owned { cursor: pointer; transition: transform 120ms ease; }
+.album-slot.owned:active { transform: scale(0.95); }
+
+.sticker-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(env(safe-area-inset-top) + 20px) 20px calc(env(safe-area-inset-bottom) + 20px);
+  background: rgba(30, 34, 62, 0.78);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.sticker-viewer.open { opacity: 1; }
+.viewer-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  transform: scale(0.3);
+  transition: transform 200ms ease;
+}
+.sticker-viewer.open .viewer-card {
+  transform: none;
+  transition: transform 420ms cubic-bezier(0.35, 1.45, 0.5, 1);
+}
+.viewer-sticker { width: min(82vw, 64vh, 640px); aspect-ratio: 1; }
+.viewer-sticker svg,
+.viewer-sticker .sticker-img { width: 100%; height: 100%; display: block; }
+.viewer-sticker .sticker-img { border-width: 6px; padding: 10px; }
+.viewer-name {
+  max-width: min(82vw, 640px);
+  font-size: clamp(26px, 4.6vw, 40px);
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--sun);
+  text-align: center;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+.viewer-close {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 16px);
+  right: 16px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--ink);
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}
 
 .series-tabs {
   display: flex;

@@ -101,28 +101,30 @@ export function show(stickerId, opts = {}) {
     coat.classList.add('gone');
     root.classList.add('stage-card', 'stage-reveal');
   } else {
+    // Paint the coat right now, before the card is ever on screen: the
+    // sticker must never be seen until it has been scratched off. (The coat
+    // used to be painted only after the drop-in, so the card fell in showing
+    // the sticker for half a second.) Fingers are ignored until it lands.
+    let lastSkritch = 0;
+    scratch = attachScratch(coat, card, {
+      threshold: 0.7,
+      onStroke(progress, first) {
+        if (first) {
+          card.classList.remove('idle');
+          card.classList.add('touched');
+        }
+        const now = performance.now();
+        if (now - lastSkritch > 90) {
+          lastSkritch = now;
+          sfx.scratch();
+        }
+      },
+      onComplete: reveal
+    });
+    card.classList.add('coated');
     const dropAt = resumed ? 250 : 900;
     later(() => root.classList.add('stage-card'), dropAt);
-    // wire the scratching once the drop-in transition has settled
-    later(() => {
-      card.classList.add('idle');
-      let lastSkritch = 0;
-      scratch = attachScratch(coat, card, {
-        threshold: 0.7,
-        onStroke(progress, first) {
-          if (first) {
-            card.classList.remove('idle');
-            card.classList.add('touched');
-          }
-          const now = performance.now();
-          if (now - lastSkritch > 90) {
-            lastSkritch = now;
-            sfx.scratch();
-          }
-        },
-        onComplete: reveal
-      });
-    }, dropAt + 750);
+    later(() => card.classList.add('idle', 'ready'), dropAt + 750);
   }
 
   // After "Yay!" a second card that queued up (two routines finished before
