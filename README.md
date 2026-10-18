@@ -14,7 +14,7 @@ works with no internet, and keeps stickers permanently.
 - **Kid screen** — giant tappable cards with hand-drawn SVG art. Tap a step to tick it, tap it
   again to undo a mistake.
 - **Parent Mode** — press and hold the lock button in the corner for 3 seconds, then
-  answer a quick sum (a grown-up check the child cannot pass). Choose a
+  answer a quick single-digit sum on a keypad (a grown-up check). Choose a
   routine (Morning / Mealtime / Tidy Up / Bedtime), switch individual steps on or off for today,
   reorder them, add custom steps with your own icon, then **Publish** to hand the iPad over.
 - **Rewards** — completing a routine awards a scratch card: the sticker hides under a silver
@@ -44,3 +44,10 @@ part of the app and are excluded from the service worker's offline cache.
 
 Bump `VERSION` in `sw.js` on every deploy, otherwise installed devices keep serving the cached
 previous version.
+
+Picture stickers sit in a separate cache (`PICTURE_CACHE`) that survives updates, so an update
+only downloads the small core files and is applied within seconds of launch. Published pictures
+are treated as immutable: to change one, give it a new file name (or bump `PICTURE_CACHE`, which
+makes every device download all pictures again).
+
+One-off fixes to data already on a device go in `MIGRATIONS` in `js/state.js`; each runs once.

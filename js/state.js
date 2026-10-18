@@ -12,7 +12,8 @@ const K = {
   active: 'kta.active',
   day: 'kta.day',
   stickers: 'kta.stickers',
-  history: 'kta.history'
+  history: 'kta.history',
+  migrations: 'kta.migrations'
 };
 
 function load(key, fallback) {
@@ -281,10 +282,11 @@ export function getStickerLog() {
 
 // Removes every sticker of one series — album entries and a pending scratch
 // card alike — and nothing from any other series. If one of them was today's
-// reward, today's routine is opened up again so it can earn a fresh sticker
-// (otherwise a parent's test run would cost the child the day's sticker).
+// reward, today's routine starts over (ticks cleared) so it can earn a fresh
+// sticker: otherwise a parent's test run would cost the child the day's
+// sticker. `before` limits it to stickers earned before that time (ms).
 // Returns how many stickers were removed.
-export function resetSeries(seriesId) {
+export function resetSeries(seriesId, { before = Infinity } = {}) {
   const series = SERIES.find(s => s.id === seriesId);
   if (!series) return 0;
   const ids = new Set(series.ids);
@@ -292,7 +294,7 @@ export function resetSeries(seriesId) {
   start.setHours(0, 0, 0, 0);
   const st = loadStickers();
   const reopen = new Set();
-  let unknownToday = false;
+  let unknownToday = false; // earned today by an older version (no routineId)
   const noteToday = (e) => {
     if (e.ts >= start.getTime()) {
       if (e.routineId) reopen.add(e.routineId);
@@ -301,7 +303,7 @@ export function resetSeries(seriesId) {
   };
   let removed = 0;
   const strip = (list) => list.filter((e) => {
-    if (!ids.has(e.id)) return true;
+    if (!ids.has(e.id) || !(e.ts < before)) return true;
     removed++;
     noteToday(e);
     return false;
@@ -312,10 +314,41 @@ export function resetSeries(seriesId) {
 
   if (reopen.size || unknownToday) {
     const day = getDay();
-    day.rewarded = unknownToday ? [] : day.rewarded.filter(r => !reopen.has(r));
+    const again = day.rewarded.filter(r => unknownToday || reopen.has(r));
+    day.rewarded = day.rewarded.filter(r => !again.includes(r));
+    for (const r of again) delete day.checks[r];
     save(K.day, day);
   }
   return removed;
+}
+
+// ---------- one-off data fixes ----------
+
+// Each runs once per device, the first time a version containing it starts.
+const MIGRATIONS = [
+  {
+    // 18 Oct 2026: a parent opened one Series-2 sticker while trying the new
+    // series out. Put it back so Nick can win it himself. Only stickers
+    // earned before this fix shipped are touched; Series 1 never is.
+    id: 'reset-s2-parent-test-2026-10-18',
+    run: () => resetSeries('s2', { before: Date.parse('2026-10-18T01:27:00Z') })
+  }
+];
+
+// For tools/qa.html: seeded test data is marked as already fixed.
+export const MIGRATION_IDS = MIGRATIONS.map(m => m.id);
+
+export function runMigrations() {
+  const m = load(K.migrations, {});
+  const done = Array.isArray(m.done) ? m.done.slice() : [];
+  let changed = false;
+  for (const mig of MIGRATIONS) {
+    if (done.includes(mig.id)) continue;
+    try { mig.run(); } catch { /* a failed fix must never block the app */ }
+    done.push(mig.id);
+    changed = true;
+  }
+  if (changed) save(K.migrations, { done });
 }
 
 // { stickerId: count } for owned stickers. Ids retired by an app update are

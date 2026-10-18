@@ -1,17 +1,19 @@
 // quiz.js — the grown-up check behind the parent gate.
 //
 // The 3-second hold alone stopped working once the child learned it, so the
-// gate now also asks for a sum that a 2–5-year-old cannot do. The dialog is
-// deliberately plain and grey: nothing here should look like a toy.
+// gate now also asks for a quick sum. Single digits on purpose (the parents
+// found two-digit sums a chore): the hold, a written question and a keypad
+// answer together still keep a toddler out. The dialog is deliberately plain
+// and grey: nothing here should look like a toy.
 
 const WRONG_LIMIT = 3;
-const MAX_DIGITS = 3;
+const MAX_DIGITS = 2;
 
 let overlay = null;
 
 function question() {
-  const a = 12 + Math.floor(Math.random() * 28); // 12–39
-  const b = 6 + Math.floor(Math.random() * 23);  // 6–28
+  const a = 2 + Math.floor(Math.random() * 8); // 2–9
+  const b = 2 + Math.floor(Math.random() * 8); // 2–9
   return { text: `${a} + ${b}`, answer: a + b };
 }
 

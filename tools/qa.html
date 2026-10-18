@@ -4,6 +4,7 @@
 <body>
 <script type="module">
 import { SERIES } from '../js/stickers.js';
+import { MIGRATION_IDS } from '../js/state.js';
 // QA seeder — sets up localStorage scenarios, then redirects into the app.
 // Usage: qa.html?seed=kid&go=%23parent   (go is a URL-encoded hash deep link)
 const params = new URLSearchParams(location.search);
@@ -81,6 +82,9 @@ if (!seeds[seed]) {
   throw new Error('no seed specified');
 }
 seeds[seed]();
+// Seeded data is current: one-off fixes for real devices must not rewrite it.
+// ('fresh' is a brand-new device, where they run and find nothing to fix.)
+if (seed !== 'fresh') set('kta.migrations', { done: MIGRATION_IDS });
 if (params.get('stay')) {
   document.title = 'seeded';
   document.body.textContent = 'seeded: ' + (params.get('seed') || 'kid');

@@ -1,7 +1,7 @@
 // main.js — boot, screen switching, day-rollover watcher, SW registration.
 
 import { app } from './bus.js';
-import { ensureToday, getSettings, getPendingSticker } from './state.js';
+import { ensureToday, getSettings, getPendingSticker, runMigrations } from './state.js';
 import { initAudioUnlock, setMuted } from './audio.js';
 import { initAutoUpdate } from './update.js';
 import * as onboarding from './views/onboarding.js';
@@ -30,6 +30,7 @@ app.celebrate = (stickerId, opts) => {
 
 function boot() {
   ensureToday();
+  runMigrations();
   setMuted(!getSettings().soundOn);
   initAudioUnlock();
 
