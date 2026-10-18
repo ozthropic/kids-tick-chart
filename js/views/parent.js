@@ -10,7 +10,7 @@ import {
 import { SERIES } from '../stickers.js';
 import { iconSvg, ALL_ICON_IDS } from '../icons.js';
 import { setMuted } from '../audio.js';
-import { checkForUpdate, getVersion } from '../update.js';
+import { checkForUpdate, getVersionInfo } from '../update.js';
 import { app } from '../bus.js';
 import { esc } from '../util.js';
 
@@ -226,7 +226,7 @@ function resetConfirmMarkup(seriesId) {
     <p class="reset-q">Reset <strong>${esc(s.name)}</strong>?</p>
     <p class="tab-hint">This removes ${what} from the ${esc(s.name)} page of the album, so they can be
       earned again. ${esc(others)} stays exactly as it is. If today&rsquo;s sticker is among them, today&rsquo;s
-      routine can be finished again for a new one.</p>
+      routine starts over (ticks cleared) so it can be finished again for a new one.</p>
     <p class="tab-hint">This cannot be undone &mdash; create a backup code first if you are not sure.</p>
     <div class="field-row">
       <button class="big-btn" id="reset-cancel">Cancel</button>
@@ -333,8 +333,11 @@ function renderSettings(body) {
   });
 
   const versionLine = body.querySelector('#version-line');
-  getVersion().then((v) => {
-    if (versionLine.isConnected) versionLine.textContent = v ? 'Version ' + v : 'Version unavailable offline';
+  getVersionInfo().then(({ running, ready }) => {
+    if (!versionLine.isConnected) return;
+    if (!running) versionLine.textContent = 'Version unavailable offline';
+    else if (ready) versionLine.textContent = `Version ${running} \u2014 ${ready} is downloaded. Tap the button to switch to it.`;
+    else versionLine.textContent = 'Version ' + running;
   });
 
   body.querySelector('#check-update').addEventListener('click', async (e) => {
@@ -344,11 +347,20 @@ function renderSettings(body) {
     note.textContent = 'Checking\u2026';
     const result = await checkForUpdate();
     if (!note.isConnected) return;
-    note.textContent = result === 'updating'
-      ? 'New version found \u2014 installing, the app will reload in a moment.'
-      : result === 'current'
-        ? 'You already have the newest version.'
-        : 'Could not check right now \u2014 the app may be offline.';
+    if (result === 'updating') {
+      note.textContent = 'New version found \u2014 installing, the app will reload in a moment.';
+      // Normally the reload comes within seconds; on a very slow connection say so.
+      setTimeout(() => {
+        if (note.isConnected) {
+          note.textContent = 'Still downloading \u2014 keep the app open; it switches over by itself when done.';
+          btn.disabled = false;
+        }
+      }, 30000);
+      return;
+    }
+    note.textContent = result === 'current'
+      ? 'You already have the newest version.'
+      : 'Could not check right now \u2014 the app may be offline.';
     btn.disabled = false;
   });
 

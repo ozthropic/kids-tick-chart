@@ -11,13 +11,17 @@
 // unless a parent asked for it explicitly from Settings, which reloads at once.
 
 const BOOT = Date.now();
-const LAUNCH_GRACE_MS = 8000;
+const LAUNCH_GRACE_MS = 12000;
 const POLL_MS = 30 * 60 * 1000;
 
 let registration = null;
 let hadController = false;
 let pendingReload = false;
 let forceReload = false;
+// The version this page's code was loaded from. Once a newer worker has taken
+// over in the background, the worker reports a newer version than this —
+// the page is then running old code until it reloads.
+let bootVersion = null;
 
 function reloadNow() {
   pendingReload = false;
@@ -30,6 +34,7 @@ export function initAutoUpdate() {
   // Captured before registering: with no controller this is a first install,
   // not an update, and must not trigger a reload.
   hadController = !!navigator.serviceWorker.controller;
+  if (hadController) getVersion().then((v) => { if (!bootVersion) bootVersion = v; });
 
   navigator.serviceWorker.register('./sw.js')
     .then((reg) => {
@@ -66,8 +71,16 @@ export function initAutoUpdate() {
 }
 
 // Parent-initiated check. Resolves to 'updating' | 'current' | 'unavailable'.
+// 'updating' means the page is about to reload into the new version.
 export async function checkForUpdate() {
   if (!registration) return 'unavailable';
+
+  // Downloaded earlier while the app was open, only waiting for a restart.
+  if (pendingReload || await isBehind()) {
+    setTimeout(reloadNow, 600);
+    return 'updating';
+  }
+
   forceReload = true;
   try {
     await registration.update();
@@ -75,11 +88,24 @@ export async function checkForUpdate() {
     forceReload = false;
     return 'unavailable';
   }
-  // Give a newly discovered worker a moment to show up as installing/waiting.
-  await new Promise((r) => setTimeout(r, 1800));
+  // Give a newly discovered worker a moment to show up as installing/waiting;
+  // the reload then follows on 'controllerchange'.
+  await new Promise((r) => setTimeout(r, 1500));
   if (registration.installing || registration.waiting) return 'updating';
+  // It may also have installed *and* taken over within that moment.
+  if (await isBehind()) {
+    setTimeout(reloadNow, 600);
+    return 'updating';
+  }
   forceReload = false;
   return 'current';
+}
+
+// True when the worker in charge is newer than the code this page runs.
+async function isBehind() {
+  if (!bootVersion) return false;
+  const active = await getVersion();
+  return !!active && active !== bootVersion;
 }
 
 // The version string baked into the running service worker, or null offline /
@@ -101,4 +127,12 @@ export function getVersion() {
       resolve(null);
     }
   });
+}
+
+// { running, ready } — the version on screen, and a newer one already
+// downloaded and waiting for a restart (null when there is none).
+export async function getVersionInfo() {
+  const active = await getVersion();
+  const running = bootVersion || active;
+  return { running, ready: active && running && active !== running ? active : null };
 }
