@@ -2,7 +2,7 @@
 
 import {
   getActive, getSettings, isChecked, toggleCheck, checkedCount,
-  isRoutineComplete, isRewarded, recordCompletion, getStickerLog, ensureToday
+  isRoutineComplete, isRewarded, recordCompletion, getStickerLog, getPendingSticker, ensureToday
 } from '../state.js';
 import { iconSvg } from '../icons.js';
 import { stickerSvg } from '../stickers.js';
@@ -64,9 +64,17 @@ function cardMarkup(item) {
   </button></li>`;
 }
 
+const SCRATCH_ICON = `<svg viewBox="0 0 48 48" class="scratch-chip-icon" aria-hidden="true">
+  <circle cx="24" cy="24" r="21" fill="#DCDFE8" stroke="#3E3A5C" stroke-width="3"/>
+  <path d="M8 30 L30 8 M14 38 L38 14" stroke="rgba(255,255,255,0.8)" stroke-width="3" stroke-linecap="round"/>
+  <text x="24" y="33" text-anchor="middle" font-size="26" font-weight="900" fill="#3E3A5C">?</text>
+</svg>`;
+
 function latestStickerToday() {
-  const log = getStickerLog();
-  return log.length ? log[log.length - 1].id : null;
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const today = getStickerLog().filter((s) => s.ts >= start.getTime());
+  return today.length ? today[today.length - 1].id : null;
 }
 
 export function render() {
@@ -94,7 +102,14 @@ export function render() {
   const total = a.items.length;
   const filled = checkedCount();
   const done = isRoutineComplete() && isRewarded();
-  const doneSticker = done ? latestStickerToday() : null;
+  // A card left unscratched (closed the app, or tapped "later") stays on offer
+  // in the banner until it is scratched — a sticker is never lost.
+  const pending = getPendingSticker();
+  const doneSticker = done && !pending ? latestStickerToday() : null;
+  const bannerInner = pending
+    ? `<button class="scratch-chip" id="scratch-chip">${SCRATCH_ICON}<span>Scratch your sticker!</span></button>`
+    : `${doneSticker ? `<span class="done-sticker">${stickerSvg(doneSticker)}</span>` : ''}
+       <span class="done-text">All done${name ? ', ' + esc(name) : ''}! Amazing job!</span>`;
 
   root.dataset.accent = a.accent || 'sun';
   root.innerHTML = `
@@ -105,10 +120,7 @@ export function render() {
         <div class="progress-stars" id="progress-stars">${starsMarkup(total, filled)}</div>
       </header>
       <div class="panel kid-panel">
-        <div class="done-banner ${done ? 'show' : ''}" id="done-banner">
-          ${doneSticker ? `<span class="done-sticker">${stickerSvg(doneSticker)}</span>` : ''}
-          <span class="done-text">All done${name ? ', ' + esc(name) : ''}! Amazing job!</span>
-        </div>
+        <div class="done-banner ${done || pending ? 'show' : ''}" id="done-banner">${bannerInner}</div>
         <ul class="cards" id="cards">${a.items.map(cardMarkup).join('')}</ul>
       </div>
       <footer class="kid-footer">
@@ -119,6 +131,11 @@ export function render() {
 
   root.querySelector('#cards').addEventListener('click', onCardTap);
   root.querySelector('#album-btn').addEventListener('click', () => app.show('album'));
+  const chip = root.querySelector('#scratch-chip');
+  if (chip) chip.addEventListener('click', () => {
+    const p = getPendingSticker();
+    if (p) app.celebrate(p.id, { resumed: true });
+  });
   attachHoldGate(root.querySelector('#gate-btn'), { ms: 3000, onComplete: openParentGate });
 }
 
@@ -146,7 +163,7 @@ function syncProgress(popIndex = -1) {
   const stars = document.getElementById('progress-stars');
   if (stars) stars.innerHTML = starsMarkup(a.items.length, checkedCount(), popIndex);
   const banner = document.getElementById('done-banner');
-  if (banner) banner.classList.toggle('show', isRoutineComplete() && isRewarded());
+  if (banner) banner.classList.toggle('show', (isRoutineComplete() && isRewarded()) || !!getPendingSticker());
 }
 
 function onCardTap(e) {

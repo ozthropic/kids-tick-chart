@@ -5,8 +5,9 @@ import { ROUTINES, ROUTINE_ORDER } from '../presets.js';
 import {
   getRoutineConfig, saveRoutineConfig, addCustomItem, removeCustomItem,
   publish, getActive, getSettings, saveSettings, getHistoryDays,
-  exportData, importData, todayStr
+  exportData, importData, todayStr, getOwnedStickers, getPendingSticker, resetSeries
 } from '../state.js';
+import { SERIES } from '../stickers.js';
 import { iconSvg, ALL_ICON_IDS } from '../icons.js';
 import { setMuted } from '../audio.js';
 import { checkForUpdate, getVersion } from '../update.js';
@@ -18,12 +19,16 @@ let sel = 'bedtime';
 let adding = false;
 let pickedIcon = null;
 let histDate = new Date();
+let confirmSeries = null; // series id awaiting "Yes, reset"
+let resetNote = '';
 
 export function render() {
   tab = 'routines';
   adding = false;
   pickedIcon = null;
   histDate = new Date();
+  confirmSeries = null;
+  resetNote = '';
   const active = getActive();
   sel = active ? active.routineId : 'bedtime';
   renderShell();
@@ -196,6 +201,40 @@ function renderRoutines(body) {
 
 /* ───────────── Settings tab ───────────── */
 
+// {distinct, total, pending} for one sticker series — total counts duplicates.
+function seriesCounts(series) {
+  const owned = getOwnedStickers();
+  const pending = getPendingSticker();
+  let distinct = 0;
+  let total = 0;
+  for (const id of series.ids) {
+    if (owned[id]) { distinct++; total += owned[id]; }
+  }
+  const hasPending = !!(pending && series.ids.includes(pending.id));
+  return { distinct, total: total + (hasPending ? 1 : 0), pending: hasPending };
+}
+
+function resetConfirmMarkup(seriesId) {
+  const s = SERIES.find((x) => x.id === seriesId);
+  if (!s) return '';
+  const c = seriesCounts(s);
+  const others = SERIES.filter((x) => x.id !== seriesId).map((x) => x.name).join(' and ');
+  const what = c.pending
+    ? `${c.total - 1} collected sticker${c.total - 1 === 1 ? '' : 's'} and the card waiting to be scratched`
+    : `all ${c.total} collected sticker${c.total === 1 ? '' : 's'}`;
+  return `<div class="reset-confirm" id="reset-confirm">
+    <p class="reset-q">Reset <strong>${esc(s.name)}</strong>?</p>
+    <p class="tab-hint">This removes ${what} from the ${esc(s.name)} page of the album, so they can be
+      earned again. ${esc(others)} stays exactly as it is. If today&rsquo;s sticker is among them, today&rsquo;s
+      routine can be finished again for a new one.</p>
+    <p class="tab-hint">This cannot be undone &mdash; create a backup code first if you are not sure.</p>
+    <div class="field-row">
+      <button class="big-btn" id="reset-cancel">Cancel</button>
+      <button class="big-btn danger-btn solid" id="reset-yes">Yes, reset ${esc(s.name)}</button>
+    </div>
+  </div>`;
+}
+
 function renderSettings(body) {
   const s = getSettings();
   body.innerHTML = `
@@ -218,6 +257,22 @@ function renderSettings(body) {
         <button class="big-btn primary" id="check-update">Update App Now</button>
         <p class="tab-hint" id="update-note">The app also updates itself the next time it opens.
         Tap the button to check and install right away.</p>
+      </div>
+
+      <div class="album-box">
+        <span class="field-label">Sticker album</span>
+        <p class="tab-hint">Each series resets on its own. The other series is never touched.</p>
+        ${SERIES.map((s) => {
+          const c = seriesCounts(s);
+          return `<div class="series-row">
+            <span class="series-row-name">${esc(s.name)}
+              <small>${c.distinct} / ${s.ids.length} collected${c.pending ? ' + 1 to scratch' : ''}</small>
+            </span>
+            <button class="big-btn danger-btn series-reset" data-series="${s.id}" ${c.total ? '' : 'disabled'}>Reset&hellip;</button>
+          </div>`;
+        }).join('')}
+        ${confirmSeries ? resetConfirmMarkup(confirmSeries) : ''}
+        <p class="tab-hint" id="reset-note">${esc(resetNote)}</p>
       </div>
 
       <div class="backup">
@@ -248,6 +303,26 @@ function renderSettings(body) {
     const sw = body.querySelector('#sound-switch');
     sw.classList.toggle('on', on);
     sw.setAttribute('aria-checked', String(on));
+  });
+
+  body.querySelectorAll('.series-reset').forEach((b) =>
+    b.addEventListener('click', () => {
+      confirmSeries = b.dataset.series;
+      resetNote = '';
+      renderTab();
+      const box = document.getElementById('reset-confirm');
+      if (box) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    })
+  );
+  const cancelReset = body.querySelector('#reset-cancel');
+  if (cancelReset) cancelReset.addEventListener('click', () => { confirmSeries = null; renderTab(); });
+  const yesReset = body.querySelector('#reset-yes');
+  if (yesReset) yesReset.addEventListener('click', () => {
+    const s = SERIES.find((x) => x.id === confirmSeries);
+    const n = resetSeries(confirmSeries);
+    confirmSeries = null;
+    resetNote = s ? `${s.name} reset — ${n} sticker${n === 1 ? '' : 's'} removed.` : '';
+    renderTab();
   });
 
   body.querySelector('#backup-export').addEventListener('click', () => {

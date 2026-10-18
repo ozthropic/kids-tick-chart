@@ -2,7 +2,7 @@
 
 // Bumped on every deploy. Installed devices pick the new version up on
 // their own (see js/update.js) — no need to reinstall the home-screen app.
-const VERSION = 'kta-v4';
+const VERSION = 'kta-v5';
 
 const ASSETS = [
   './',
@@ -21,6 +21,7 @@ const ASSETS = [
   './js/gate.js',
   './js/update.js',
   './js/quiz.js',
+  './js/scratch.js',
   './js/views/onboarding.js',
   './js/views/kid.js',
   './js/views/celebration.js',

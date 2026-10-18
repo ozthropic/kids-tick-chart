@@ -52,6 +52,14 @@ const seeds = {
     set('kta.stickers', { log: ids.map((id) => ({ id, ts: Date.now() - 86400000 })) });
     set('kta.day', { date: today, checks: { bedtime: ['bath', 'pyjamas', 'brush-teeth', 'potty', 'book-song'] }, rewarded: [] });
   },
+  // a scratch card left unscratched: the app must reopen straight onto it
+  pending() {
+    localStorage.clear();
+    set('kta.settings', { childName: 'Nick', soundOn: true, onboarded: true });
+    set('kta.active', { routineId: 'bedtime', title: 'Bedtime', accent: 'night', publishedAt: Date.now(), items: BEDTIME_ITEMS });
+    set('kta.stickers', { log: [{ id: 'blue-pup', ts: Date.now() - 86400000 }], pending: [{ id: 's2-007', ts: Date.now(), routineId: 'bedtime' }] });
+    set('kta.day', { date: today, checks: { bedtime: BEDTIME_ITEMS.map((i) => i.id) }, rewarded: ['bedtime'] });
+  },
   album() {
     localStorage.clear();
     set('kta.settings', { childName: 'Nick', soundOn: true, onboarded: true });
@@ -69,7 +77,7 @@ const seeds = {
 const seed = params.get('seed');
 if (!seeds[seed]) {
   document.body.textContent =
-    'QA seeder. Add ?seed=kid | morning | album | album-full | fresh to run. Nothing was changed.';
+    'QA seeder. Add ?seed=kid | morning | album | album-full | pending | fresh to run. Nothing was changed.';
   throw new Error('no seed specified');
 }
 seeds[seed]();

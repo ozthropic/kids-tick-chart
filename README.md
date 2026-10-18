@@ -17,9 +17,13 @@ works with no internet, and keeps stickers permanently.
   answer a quick sum (a grown-up check the child cannot pass). Choose a
   routine (Morning / Mealtime / Tidy Up / Bedtime), switch individual steps on or off for today,
   reorder them, add custom steps with your own icon, then **Publish** to hand the iPad over.
-- **Rewards** — completing a routine awards a sticker, collected in an album with one page per
-  series: 55 drawn characters (Series 1) and 112 picture stickers (Series 2, `stickers/s2/001.jpg`
-  … `112.jpg`, 512 px JPEGs cropped to the round artwork).
+- **Rewards** — completing a routine awards a scratch card: the sticker hides under a silver
+  coating the child rubs off with a finger, and joins the album once about 70 % is scratched.
+  An unscratched card is kept (it comes back on the next launch) so a sticker is never lost.
+  The album has one page per series: 55 drawn characters (Series 1) and 112 picture stickers
+  (Series 2, `stickers/s2/001.jpg` … `112.jpg`, 512 px JPEGs cropped to the round artwork).
+  Parent Settings can reset one series at a time (e.g. after a parent's test run); the other
+  series is never touched.
 - **History** — a month calendar in Parent Mode stars every day at least one routine was finished.
 
 Settings, stickers, and history live only in the browser's localStorage on that device — nothing is

@@ -108,6 +108,27 @@ export const sfx = {
     cheer();
   },
 
+  // One short burst of filtered noise per scratch stroke — a soft "skritch".
+  scratch() {
+    if (!ensureCtx()) return;
+    const dur = 0.07;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 1800 + Math.random() * 1400;
+    bp.Q.value = 1.2;
+    const g = ctx.createGain();
+    g.gain.value = 0.14;
+    src.connect(bp);
+    bp.connect(g);
+    g.connect(master);
+    src.start(ctx.currentTime);
+  },
+
   shimmer() {
     if (!ensureCtx()) return;
     const notes = [1046.5, 1174.7, 1318.5, 1568, 1760, 2093]; // C-major pentatonic climb

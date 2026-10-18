@@ -3,5 +3,5 @@
 
 export const app = {
   show: null,      // (screenName) => void — set by main.js
-  celebrate: null  // (stickerId) => void  — set by main.js
+  celebrate: null  // (stickerId, opts?) => void — set by main.js
 };
