@@ -4,7 +4,7 @@
 // a 7pm bedtime in UTC+ timezones would land on tomorrow's date).
 
 import { ROUTINES } from './presets.js';
-import { STICKER_IDS, isKnownSticker } from './stickers.js';
+import { STICKER_IDS, SERIES, isKnownSticker } from './stickers.js';
 
 const K = {
   settings: 'kta.settings',
@@ -207,8 +207,9 @@ export function isRewarded() {
 
 // ---------- completion / reward / history ----------
 
-// Marks today's active routine complete (idempotent) and awards a sticker.
-// Returns the sticker id, or null if already rewarded today.
+// Marks today's active routine complete (idempotent) and picks a sticker,
+// which waits as a scratch card until the child has scratched it off
+// (claimPending). Returns the sticker id, or null if already rewarded today.
 export function recordCompletion() {
   const a = getActive();
   if (!a) return null;
@@ -225,23 +226,96 @@ export function recordCompletion() {
   hist.days[t] = arr;
   save(K.history, hist);
 
-  return awardSticker();
+  return holdSticker(a.routineId);
 }
 
-function awardSticker() {
-  const log = getStickerLog();
-  const owned = new Set(log.map(s => s.id));
-  const pool = STICKER_IDS.filter(id => !owned.has(id));
+// kta.stickers = { log: [{id, ts, routineId?}], pending: [{id, ts, routineId}] }
+// `pending` are scratch cards not yet scratched off — normally one, but two
+// routines finished before the first card was scratched queue up, so a
+// sticker is never lost.
+const isEntry = (e) => e && typeof e === 'object' && typeof e.id === 'string';
+
+function loadStickers() {
+  const s = load(K.stickers, {});
+  const log = Array.isArray(s.log) ? s.log.filter(isEntry) : [];
+  const pending = Array.isArray(s.pending) ? s.pending.filter(isEntry) : [];
+  return { log, pending };
+}
+
+function saveStickers(st) {
+  save(K.stickers, { log: st.log, pending: st.pending });
+}
+
+// Picks a sticker not yet owned or waiting, and parks it as a scratch card.
+function holdSticker(routineId) {
+  const st = loadStickers();
+  const taken = new Set([...st.log, ...st.pending].map(s => s.id));
+  const pool = STICKER_IDS.filter(id => !taken.has(id));
   const from = pool.length ? pool : STICKER_IDS;
   const pick = from[Math.floor(Math.random() * from.length)];
-  log.push({ id: pick, ts: Date.now() });
-  save(K.stickers, { log });
+  st.pending.push({ id: pick, ts: Date.now(), routineId });
+  saveStickers(st);
   return pick;
 }
 
+// The next scratch card waiting to be scratched, or null.
+export function getPendingSticker() {
+  return loadStickers().pending[0] || null;
+}
+
+// Scratch card finished: that sticker joins the album. Returns true when a
+// sticker was actually added (false for a stale or test-only celebration).
+export function claimPending(id) {
+  const st = loadStickers();
+  const i = st.pending.findIndex(p => p.id === id);
+  if (i === -1) return false;
+  const [card] = st.pending.splice(i, 1);
+  st.log.push({ id: card.id, ts: Date.now(), routineId: card.routineId });
+  saveStickers(st);
+  return true;
+}
+
 export function getStickerLog() {
-  const s = load(K.stickers, { log: [] });
-  return Array.isArray(s.log) ? s.log.filter(e => e && typeof e.id === 'string') : [];
+  return loadStickers().log;
+}
+
+// Removes every sticker of one series — album entries and a pending scratch
+// card alike — and nothing from any other series. If one of them was today's
+// reward, today's routine is opened up again so it can earn a fresh sticker
+// (otherwise a parent's test run would cost the child the day's sticker).
+// Returns how many stickers were removed.
+export function resetSeries(seriesId) {
+  const series = SERIES.find(s => s.id === seriesId);
+  if (!series) return 0;
+  const ids = new Set(series.ids);
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const st = loadStickers();
+  const reopen = new Set();
+  let unknownToday = false;
+  const noteToday = (e) => {
+    if (e.ts >= start.getTime()) {
+      if (e.routineId) reopen.add(e.routineId);
+      else unknownToday = true;
+    }
+  };
+  let removed = 0;
+  const strip = (list) => list.filter((e) => {
+    if (!ids.has(e.id)) return true;
+    removed++;
+    noteToday(e);
+    return false;
+  });
+  st.log = strip(st.log);
+  st.pending = strip(st.pending);
+  saveStickers(st);
+
+  if (reopen.size || unknownToday) {
+    const day = getDay();
+    day.rewarded = unknownToday ? [] : day.rewarded.filter(r => !reopen.has(r));
+    save(K.day, day);
+  }
+  return removed;
 }
 
 // { stickerId: count } for owned stickers. Ids retired by an app update are
