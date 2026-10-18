@@ -2,7 +2,7 @@
 
 // Bumped on every deploy. Installed devices pick the new version up on
 // their own (see js/update.js) — no need to reinstall the home-screen app.
-const VERSION = 'kta-v6';
+const VERSION = 'kta-v7';
 
 // Picture stickers never change once published (a changed picture must get a
 // new file name), so they live in their own cache that survives app updates.

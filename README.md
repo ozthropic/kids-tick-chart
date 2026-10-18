@@ -22,6 +22,7 @@ works with no internet, and keeps stickers permanently.
   An unscratched card is kept (it comes back on the next launch) so a sticker is never lost.
   The album has one page per series: 55 drawn characters (Series 1) and 112 picture stickers
   (Series 2, `stickers/s2/001.jpg` … `112.jpg`, 512 px JPEGs cropped to the round artwork).
+  Tapping a collected sticker in the album shows it big; locked slots stay closed.
   Parent Settings can reset one series at a time (e.g. after a parent's test run); the other
   series is never touched.
 - **History** — a month calendar in Parent Mode stars every day at least one routine was finished.

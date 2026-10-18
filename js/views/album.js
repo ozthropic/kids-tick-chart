@@ -17,6 +17,38 @@ const BACK_SVG = `<svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
 // Remembered for the session so flipping back to the album lands on the same page.
 let currentSeries = null;
 
+// Tapping a collected sticker shows it big, over the album. Tap anywhere (or
+// the ×) to put it back. Locked slots never open: that would spoil the surprise.
+function openViewer(root, id) {
+  closeViewer(root, true);
+  const v = document.createElement('div');
+  v.className = 'sticker-viewer';
+  v.setAttribute('role', 'dialog');
+  v.setAttribute('aria-modal', 'true');
+  v.setAttribute('aria-label', stickerName(id));
+  v.innerHTML = `
+    <div class="viewer-card">
+      <div class="viewer-sticker">${stickerSvg(id)}</div>
+      <p class="viewer-name">${esc(stickerName(id))}</p>
+    </div>
+    <button class="viewer-close" aria-label="Close">&times;</button>`;
+  root.appendChild(v);
+  void v.offsetWidth; // start from the small state so it visibly grows
+  v.classList.add('open');
+  v.addEventListener('click', () => closeViewer(root));
+}
+
+function closeViewer(root, instantly = false) {
+  const v = root.querySelector('.sticker-viewer');
+  if (!v) return;
+  if (instantly) {
+    v.remove();
+    return;
+  }
+  v.classList.remove('open');
+  setTimeout(() => v.remove(), 220);
+}
+
 function ownedIn(series, owned) {
   return series.ids.filter((id) => owned[id]).length;
 }
@@ -56,7 +88,8 @@ export function render() {
         ${series.ids.map((id) => {
           const n = owned[id] || 0;
           const isNew = n > 0 && todays.has(id);
-          return `<div class="album-slot ${n ? 'owned' : 'locked'}">
+          const tap = n ? `data-id="${id}" role="button" tabindex="0" aria-label="${esc(stickerName(id))}: see it big"` : '';
+          return `<div class="album-slot ${n ? 'owned' : 'locked'}" ${tap}>
             ${stickerSvg(id)}
             ${n > 1 ? `<span class="slot-count">&times;${n}</span>` : ''}
             ${isNew ? '<span class="slot-new">NEW</span>' : ''}
@@ -67,6 +100,18 @@ export function render() {
     </div>`;
 
   root.querySelector('#album-back').addEventListener('click', () => app.show('kid'));
+  const grid = root.querySelector('.album-grid');
+  grid.addEventListener('click', (e) => {
+    const slot = e.target.closest('.album-slot.owned');
+    if (slot) openViewer(root, slot.dataset.id);
+  });
+  grid.addEventListener('keydown', (e) => {
+    const slot = e.target.closest('.album-slot.owned');
+    if (slot && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      openViewer(root, slot.dataset.id);
+    }
+  });
   root.querySelectorAll('.series-tab').forEach((b) =>
     b.addEventListener('click', () => {
       currentSeries = b.dataset.series;
