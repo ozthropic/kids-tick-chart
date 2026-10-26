@@ -2,7 +2,7 @@
 
 // Bumped on every deploy. Installed devices pick the new version up on
 // their own (see js/update.js) — no need to reinstall the home-screen app.
-const VERSION = 'kta-v7';
+const VERSION = 'kta-v8';
 
 // Picture stickers never change once published (a changed picture must get a
 // new file name), so they live in their own cache that survives app updates.
@@ -41,10 +41,22 @@ const ASSETS = [
 
 // Series-2 picture stickers. Cached on a best-effort basis: one missing file
 // must never stop the whole update from installing.
+// A corrected picture is published under a new name (keep in step with
+// SERIES2_FILES in js/stickers.js); the old file is dropped from the picture
+// cache on activation, so a device never shows the faulty one again.
+const REPLACED_PICTURES = { 75: '075b' };
 const STICKER_PICTURES = Array.from(
   { length: 112 },
-  (_, i) => `./stickers/s2/${String(i + 1).padStart(3, '0')}.jpg`
+  (_, i) => `./stickers/s2/${REPLACED_PICTURES[i + 1] || String(i + 1).padStart(3, '0')}.jpg`
 );
+
+async function prunePictures() {
+  const pics = await caches.open(PICTURE_CACHE);
+  const keep = new Set(STICKER_PICTURES.map((u) => new URL(u, self.location.href).href));
+  for (const req of await pics.keys()) {
+    if (!keep.has(req.url.split('?')[0])) await pics.delete(req);
+  }
+}
 
 const fresh = (u) => new Request(u, { cache: 'reload' });
 
@@ -78,6 +90,7 @@ self.addEventListener('activate', (e) => {
       .then((keys) => Promise.all(
         keys.filter((k) => k !== VERSION && k !== PICTURE_CACHE).map((k) => caches.delete(k))
       ))
+      .then(() => prunePictures())
       .then(() => self.clients.claim())
   );
 });

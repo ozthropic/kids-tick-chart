@@ -713,11 +713,18 @@ const SERIES2_NAMES = [
 const SERIES2_COUNT = 112;
 const pad3 = (n) => String(n).padStart(3, '0');
 
+// A picture corrected after it was published gets a new file name, because
+// devices keep published pictures in a cache that survives updates (sw.js).
+// The sticker's id stays the same, so a child who owns it keeps it.
+// Keep in step with REPLACED_PICTURES in sw.js.
+//   075 -> 075b (26 Oct 2026): Ms Rachel had a third hand; it was removed.
+const SERIES2_FILES = { 75: '075b' };
+
 const PICTURES = Array.from({ length: SERIES2_COUNT }, (_, i) => ({
   id: `s2-${pad3(i + 1)}`,
   name: SERIES2_NAMES[i] || `Sticker ${i + 1}`,
   // resolved against this module, so the path is right from any page (e.g. tools/)
-  src: new URL(`../stickers/s2/${pad3(i + 1)}.jpg`, import.meta.url).href
+  src: new URL(`../stickers/s2/${SERIES2_FILES[i + 1] || pad3(i + 1)}.jpg`, import.meta.url).href
 }));
 
 function mulberry32(seed) {

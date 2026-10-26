@@ -11,8 +11,9 @@ works with no internet, and keeps stickers permanently.
 
 ## How it works
 
-- **Kid screen** — giant tappable cards with hand-drawn SVG art. Tap a step to tick it, tap it
-  again to undo a mistake.
+- **Kid screen** — giant tappable cards with hand-drawn SVG art. Tap a step to tick it. A
+  ticked step does not untick on a tap; a grown-up holds a finger on it for 3 seconds to
+  undo it (no visible hint, so the child cannot turn it into a game).
 - **Parent Mode** — press and hold the lock button in the corner for 3 seconds, then
   answer a quick single-digit sum on a keypad (a grown-up check). Choose a
   routine (Morning / Mealtime / Tidy Up / Bedtime), switch individual steps on or off for today,
@@ -21,7 +22,8 @@ works with no internet, and keeps stickers permanently.
   coating the child rubs off with a finger, and joins the album once about 70 % is scratched.
   An unscratched card is kept (it comes back on the next launch) so a sticker is never lost.
   The album has one page per series: 55 drawn characters (Series 1) and 112 picture stickers
-  (Series 2, `stickers/s2/001.jpg` … `112.jpg`, 512 px JPEGs cropped to the round artwork).
+  (Series 2, `stickers/s2/001.jpg` … `112.jpg`, 512 px JPEGs cropped to the round artwork;
+  `075b.jpg` replaced `075.jpg` on 26 Oct 2026 after an extra hand was removed from it).
   Tapping a collected sticker in the album shows it big; locked slots stay closed.
   Parent Settings can reset one series at a time (e.g. after a parent's test run); the other
   series is never touched.
