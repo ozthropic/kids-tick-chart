@@ -129,7 +129,12 @@ export function render() {
       <button class="gate-btn" id="gate-btn" aria-label="Parents: press and hold">${GATE_RING}${LOCK_SVG}</button>
     </div>`;
 
-  root.querySelector('#cards').addEventListener('click', onCardTap);
+  const cards = root.querySelector('#cards');
+  cards.addEventListener('click', onCardTap);
+  cards.addEventListener('pointerdown', onCardDown);
+  cards.addEventListener('pointermove', onCardMove);
+  ['pointerup', 'pointercancel'].forEach((ev) => cards.addEventListener(ev, cancelUntickHold));
+  cards.addEventListener('contextmenu', (e) => e.preventDefault()); // long press: no menu
   root.querySelector('#album-btn').addEventListener('click', () => app.show('album'));
   const chip = root.querySelector('#scratch-chip');
   if (chip) chip.addEventListener('click', () => {
@@ -146,8 +151,65 @@ function openParentGate() {
 }
 
 // --- card interaction ---
-// A tap toggles a step: tap to tick, tap again to undo a mistake. (A
-// press-and-hold undo was tried first; parents never discovered it.)
+// A tap ticks a step. A ticked step does NOT untick on a tap: the child had
+// made a game of tick, untick, tick. Unticking needs a finger held still on
+// the card for 3 seconds, with no visible hint while holding, so only a
+// grown-up who knows about it can undo a step (parents' request, 26 Oct 2026).
+// Built like the parent gate's hold (js/gate.js): checked by timestamp, a
+// second finger or a moving finger cancels it.
+
+const UNTICK_HOLD_MS = 3000;
+const MOVE_CANCEL_PX = 14;
+let untickHold = null;     // { btn, pointerId, x, y, t0, timer }
+let heldPress = false;     // this press already unticked: swallow its click
+
+function cancelUntickHold() {
+  if (untickHold) {
+    clearTimeout(untickHold.timer);
+    untickHold = null;
+  }
+}
+
+function onCardDown(e) {
+  heldPress = false;
+  if (untickHold) {           // a second finger: no untick at all
+    cancelUntickHold();
+    return;
+  }
+  const btn = e.target.closest('.card');
+  if (!btn || !isChecked(btn.dataset.id)) return;
+  const t0 = Date.now();
+  untickHold = {
+    btn, pointerId: e.pointerId, x: e.clientX, y: e.clientY, t0,
+    timer: setTimeout(() => {
+      const h = untickHold;
+      untickHold = null;
+      if (h && Date.now() - h.t0 >= UNTICK_HOLD_MS - 150) untickByHold(h.btn);
+    }, UNTICK_HOLD_MS)
+  };
+}
+
+function onCardMove(e) {
+  if (!untickHold || e.pointerId !== untickHold.pointerId) return;
+  if (Math.hypot(e.clientX - untickHold.x, e.clientY - untickHold.y) > MOVE_CANCEL_PX) cancelUntickHold();
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) cancelUntickHold();
+});
+
+function untickByHold(btn) {
+  heldPress = true;
+  if (ensureToday()) {
+    render();
+    return;
+  }
+  if (!getActive() || !isChecked(btn.dataset.id)) return;
+  toggleCheck(btn.dataset.id);
+  btn.classList.remove('is-checked');
+  sfx.uncheck();
+  syncProgress();
+}
 
 function bounceCard(btn) {
   btn.classList.remove('bounce');
@@ -169,6 +231,11 @@ function syncProgress(popIndex = -1) {
 function onCardTap(e) {
   const btn = e.target.closest('.card');
   if (!btn) return;
+  // the finger lifting after a 3-second untick must not tick it straight back
+  if (heldPress) {
+    heldPress = false;
+    return;
+  }
   // date flipped since last render (tap landed inside the rollover window):
   // reset the screen instead of writing a check into the stale-looking day
   if (ensureToday()) {
@@ -176,21 +243,17 @@ function onCardTap(e) {
     return;
   }
   if (!getActive()) return;
+  // a ticked step only unticks with the 3-second hold (see above)
+  if (isChecked(btn.dataset.id)) return;
 
-  const nowChecked = toggleCheck(btn.dataset.id);
-  btn.classList.toggle('is-checked', nowChecked);
-
-  if (nowChecked) {
-    bounceCard(btn);
-    sfx.pop();
-    burstAt(btn.querySelector('.check'));
-    syncProgress(checkedCount() - 1);
-    if (isRoutineComplete() && !isRewarded()) {
-      const sticker = recordCompletion();
-      if (sticker) setTimeout(() => app.celebrate(sticker), 750);
-    }
-  } else {
-    sfx.uncheck();
-    syncProgress();
+  toggleCheck(btn.dataset.id);
+  btn.classList.add('is-checked');
+  bounceCard(btn);
+  sfx.pop();
+  burstAt(btn.querySelector('.check'));
+  syncProgress(checkedCount() - 1);
+  if (isRoutineComplete() && !isRewarded()) {
+    const sticker = recordCompletion();
+    if (sticker) setTimeout(() => app.celebrate(sticker), 750);
   }
 }
