@@ -1,3 +1,7 @@
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# private notes repo and the local CLAUDE.md that imports it (never published)
+/notes/
+/CLAUDE.md
